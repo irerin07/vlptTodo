@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MdAdd } from 'react-icons/md';
 import styled, { css } from 'styled-components';
+import { useTodoDispatch, useTodoNextId } from '../TodoContext';
 
 const CircleButton = styled.button`
     background: #38d9a9;
@@ -52,7 +53,7 @@ const InsertFormPositioner = styled.div`
     position: absolute;
 `;
 
-const InsertForm = styled.div`
+const InsertForm = styled.form`
     background: #f8f9fa;
     padding: 32px;
     padding-bottom: 72px;
@@ -73,10 +74,35 @@ const Input = styled.input`
 
 function TodoCreate(){
     const [open, setOpen] = useState(false);
+    const [value, setValue] = useState('');
+    const dispatch = useTodoDispatch();
+    const nextId = useTodoNextId();
+
     const onToggle = () => setOpen(!open);
+    const onChange = (e) => setValue(e.target.value);
+    const onSubmit = e => {
+        e.preventDefault();
+        dispatch({
+            type: 'CREATE',
+            todo: {
+                id: nextId.current,
+                text: value,
+                done: false,
+            }
+        });
+        setValue('');
+        setOpen(false);
+        nextId.current +=1;
+    }
+
   return(
       <>
-      {open && <InsertFormPositioner><InsertForm><Input placeholder="Enter your todo and press Enter" autoFocus/></InsertForm></InsertFormPositioner>}
+      {open && 
+        <InsertFormPositioner>
+          <InsertForm onSubmit={onSubmit}>
+              <Input placeholder="Enter your todo and press Enter" autoFocus onChange={onChange} value={value}/>
+            </InsertForm>
+        </InsertFormPositioner>}
     <CircleButton onClick={onToggle} open={open}>
         <MdAdd/>
     </CircleButton>
@@ -84,4 +110,4 @@ function TodoCreate(){
   );
 }
 
-export default TodoCreate;
+export default React.memo(TodoCreate);
